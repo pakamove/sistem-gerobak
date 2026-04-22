@@ -3,11 +3,12 @@ import { cn } from '@/lib/utils'
 interface TopHeaderProps {
   title: string
   subtitle?: string
+  leftAction?: React.ReactNode
   rightAction?: React.ReactNode
   className?: string
 }
 
-export default function TopHeader({ title, subtitle, rightAction, className }: TopHeaderProps) {
+export default function TopHeader({ title, subtitle, leftAction, rightAction, className }: TopHeaderProps) {
   return (
     <header
       className={cn(
@@ -17,11 +18,14 @@ export default function TopHeader({ title, subtitle, rightAction, className }: T
       )}
     >
       <div className="flex items-center justify-between h-14">
-        <div>
-          <h1 className="text-base font-semibold text-[#EDE5D8] leading-tight">{title}</h1>
-          {subtitle && (
-            <p className="text-xs text-[#A8967E] leading-tight">{subtitle}</p>
-          )}
+        <div className="flex items-center gap-2">
+          {leftAction && <div>{leftAction}</div>}
+          <div>
+            <h1 className="text-base font-semibold text-[#EDE5D8] leading-tight">{title}</h1>
+            {subtitle && (
+              <p className="text-xs text-[#A8967E] leading-tight">{subtitle}</p>
+            )}
+          </div>
         </div>
         {rightAction && <div className="flex items-center gap-2">{rightAction}</div>}
       </div>

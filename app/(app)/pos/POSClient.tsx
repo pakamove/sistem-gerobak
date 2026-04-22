@@ -11,7 +11,6 @@ import CartBar from '@/components/pos/CartBar'
 import CartSheet from '@/components/pos/CartSheet'
 import TunaiPaymentModal from '@/components/pos/TunaiPaymentModal'
 import QrisPaymentModal from '@/components/pos/QrisPaymentModal'
-import RecentTransactions from '@/components/pos/RecentTransactions'
 import OpenShiftModal from '@/components/pos/OpenShiftModal'
 import CloseShiftModal from '@/components/pos/CloseShiftModal'
 import { GridSkeleton } from '@/components/shared/LoadingSkeleton'
@@ -270,7 +269,7 @@ export default function POSClient({ profile }: POSClientProps) {
           />
 
           {/* Menu Grid */}
-          <div className="flex-1">
+          <div className="flex-1 pb-24">
             {menusLoading ? (
               <GridSkeleton count={6} />
             ) : menusError ? (
@@ -300,20 +299,10 @@ export default function POSClient({ profile }: POSClientProps) {
             )}
           </div>
 
-          {/* Recent Transactions */}
-          <div className="border-t border-white/8 mt-2">
-            <div className="px-4 pt-4 pb-2 flex items-center justify-between">
-              <p className="text-sm font-semibold text-[#EDE5D8]">Transaksi Terbaru</p>
-            </div>
-            <RecentTransactions shiftId={resolvedShift?.id ?? null} />
+          {/* Cart Bar — always sticky above bottom nav */}
+          <div className="fixed bottom-16 left-0 right-0 z-40 pb-2 pt-2 bg-[#1C1712]/90 backdrop-blur-sm border-t border-white/8">
+            <CartBar onOpenCart={() => setShowCart(true)} />
           </div>
-
-          {/* Cart Bar — sticky bottom, above bottom nav */}
-          {count > 0 && (
-            <div className="sticky bottom-0 pb-4 pt-2 bg-[#1C1712]">
-              <CartBar onOpenCart={() => setShowCart(true)} />
-            </div>
-          )}
         </div>
       )}
 

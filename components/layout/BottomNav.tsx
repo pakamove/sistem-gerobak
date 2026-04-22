@@ -9,6 +9,8 @@ import {
   ShoppingBag,
   LayoutDashboard,
   Settings,
+  ClipboardCheck,
+  BarChart3,
 } from 'lucide-react'
 import { UserRole } from '@/lib/types'
 import { cn } from '@/lib/utils'
@@ -25,6 +27,8 @@ const navItems: NavItem[] = [
   { label: 'Dapur', href: '/kitchen', icon: ChefHat, roles: ['owner', 'manager', 'koki'] },
   { label: 'Stok', href: '/inventory', icon: Package, roles: ['owner', 'manager', 'purchaser', 'koki'] },
   { label: 'Beli', href: '/purchasing', icon: ShoppingBag, roles: ['owner', 'manager', 'purchaser'] },
+  { label: 'Absensi', href: '/attendance', icon: ClipboardCheck, roles: ['owner', 'manager', 'purchaser', 'koki', 'delivery'] },
+  { label: 'Laporan', href: '/reports', icon: BarChart3, roles: ['owner', 'manager'] },
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['owner', 'manager'] },
   { label: 'Profil', href: '/settings', icon: Settings, roles: ['owner', 'manager', 'purchaser', 'koki', 'crew_gerobak', 'delivery'] },
 ]

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { PurchaseOrder, StatusPO } from '@/lib/types'
+import MoneyInput from '@/components/shared/MoneyInput'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
@@ -34,14 +35,14 @@ const statusLabel: Record<StatusPO, string> = {
 
 export default function UpdatePOModal({ open, po, role, onClose, onSuccess }: Props) {
   const [status, setStatus] = useState<StatusPO | ''>('')
-  const [hargaRealisasi, setHargaRealisasi] = useState('')
+  const [hargaRealisasi, setHargaRealisasi] = useState(0)
   const [catatan, setCatatan] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (open && po) {
       setStatus('')
-      setHargaRealisasi(po.harga_realisasi ? String(po.harga_realisasi) : '')
+      setHargaRealisasi(po.harga_realisasi ?? 0)
       setCatatan(po.catatan || '')
     }
   }, [open, po])
@@ -61,8 +62,8 @@ export default function UpdatePOModal({ open, po, role, onClose, onSuccess }: Pr
     setLoading(true)
     try {
       const body: Record<string, unknown> = { status }
-      if (hargaRealisasi) body.harga_realisasi = parseInt(hargaRealisasi)
-      if (hargaRealisasi && po.qty_order) body.total_realisasi = parseInt(hargaRealisasi) * po.qty_order
+      if (hargaRealisasi > 0) body.harga_realisasi = hargaRealisasi
+      if (hargaRealisasi > 0 && po.qty_order) body.total_realisasi = hargaRealisasi * po.qty_order
       if (catatan) body.catatan = catatan
 
       const res = await fetch(`/api/purchasing/po/${po.id}`, {
@@ -118,8 +119,7 @@ export default function UpdatePOModal({ open, po, role, onClose, onSuccess }: Pr
           {(status === 'sudah_beli' || status === 'sudah_terima') && (
             <div className="space-y-1">
               <Label className="text-[#A8967E] text-xs">Harga Realisasi / satuan (Rp)</Label>
-              <Input type="number" min="0" value={hargaRealisasi} onChange={e => setHargaRealisasi(e.target.value)}
-                placeholder="0" className="bg-[#2C1810] border-white/10 text-[#EDE5D8] h-11" />
+              <MoneyInput value={hargaRealisasi} onChange={setHargaRealisasi} placeholder="0" className="bg-[#2C1810] border-white/10 h-11" />
             </div>
           )}
           <div className="space-y-1">

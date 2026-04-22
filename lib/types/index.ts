@@ -50,6 +50,10 @@ export interface BahanBaku {
   stok_minimum: number
   harga_terakhir: number
   lokasi_simpan: string | null
+  cara_simpan: string | null
+  masa_simpan_hari: number | null
+  supplier_utama_id: string | null
+  catatan: string | null
   is_active: boolean
   created_at: string
   updated_at: string
@@ -69,8 +73,15 @@ export interface Supplier {
   id: string
   nama_supplier: string
   kontak: string | null
+  email: string | null
+  alamat: string | null
+  pic: string | null
   kategori_supply: string | null
   metode_bayar: string | null
+  lead_time_hari: number | null
+  min_order: string | null
+  termin_pembayaran: string | null
+  catatan: string | null
   status: string
   is_active: boolean
 }
@@ -196,6 +207,40 @@ export interface CartItem {
   harga_jual: number
   qty: number
   subtotal: number
+}
+
+export interface Asset {
+  id: string
+  nama_aset: string
+  kategori: string | null
+  tanggal_beli: string | null
+  harga_beli: number
+  umur_manfaat_tahun: number
+  nilai_residu: number
+  penyusutan_per_tahun: number
+  nilai_buku: number
+  lokasi: string | null
+  kondisi: string | null
+  catatan: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface AbsensiRecord {
+  id: string
+  user_id: string
+  tanggal: string
+  clock_in: string
+  clock_out: string | null
+  latitude_in: number | null
+  longitude_in: number | null
+  latitude_out: number | null
+  longitude_out: number | null
+  durasi_menit: number | null
+  status: string
+  catatan: string | null
+  catatan_out: string | null
+  user?: { id: string; nama_lengkap: string; role: string }
 }
 
 export interface DashboardSummary {

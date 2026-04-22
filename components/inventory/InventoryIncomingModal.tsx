@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { BahanBaku } from '@/lib/types'
 import { getTodayDate } from '@/lib/utils/format'
+import MoneyInput from '@/components/shared/MoneyInput'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
@@ -19,7 +20,7 @@ interface Props {
 
 export default function InventoryIncomingModal({ open, bahan, onClose, onSuccess }: Props) {
   const [qtyMasuk, setQtyMasuk] = useState('')
-  const [hargaBeli, setHargaBeli] = useState('')
+  const [hargaBeli, setHargaBeli] = useState(0)
   const [tanggalMasuk, setTanggalMasuk] = useState(getTodayDate())
   const [catatan, setCatatan] = useState('')
   const [loading, setLoading] = useState(false)
@@ -27,7 +28,7 @@ export default function InventoryIncomingModal({ open, bahan, onClose, onSuccess
   useEffect(() => {
     if (open) {
       setQtyMasuk('')
-      setHargaBeli(bahan?.harga_terakhir ? String(bahan.harga_terakhir) : '')
+      setHargaBeli(bahan?.harga_terakhir ?? 0)
       setTanggalMasuk(getTodayDate())
       setCatatan('')
     }
@@ -36,9 +37,8 @@ export default function InventoryIncomingModal({ open, bahan, onClose, onSuccess
   const handleSubmit = async () => {
     if (!bahan) return
     const qty = parseFloat(qtyMasuk)
-    const harga = parseInt(hargaBeli)
     if (!qty || qty <= 0) { toast.error('Qty masuk harus > 0'); return }
-    if (isNaN(harga) || harga < 0) { toast.error('Harga beli tidak valid'); return }
+    if (hargaBeli < 0) { toast.error('Harga beli tidak valid'); return }
 
     setLoading(true)
     try {
@@ -48,7 +48,7 @@ export default function InventoryIncomingModal({ open, bahan, onClose, onSuccess
         body: JSON.stringify({
           bahan_id: bahan.id,
           qty_masuk: qty,
-          harga_beli: harga,
+          harga_beli: hargaBeli,
           tanggal_masuk: tanggalMasuk,
           catatan,
         }),
@@ -90,9 +90,7 @@ export default function InventoryIncomingModal({ open, bahan, onClose, onSuccess
             </div>
             <div className="space-y-1">
               <Label className="text-[#A8967E] text-xs">Harga Beli (Rp / {bahan.satuan})</Label>
-              <Input type="number" min="0" placeholder="0" value={hargaBeli}
-                onChange={e => setHargaBeli(e.target.value)}
-                className="bg-[#2C1810] border-white/10 text-[#EDE5D8] h-11" />
+              <MoneyInput value={hargaBeli} onChange={setHargaBeli} placeholder="0" className="bg-[#2C1810] border-white/10 h-11" />
             </div>
             <div className="space-y-1">
               <Label className="text-[#A8967E] text-xs">Catatan (opsional)</Label>

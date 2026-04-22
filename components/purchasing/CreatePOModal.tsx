@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getTodayDate } from '@/lib/utils/format'
+import MoneyInput from '@/components/shared/MoneyInput'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
@@ -21,7 +22,7 @@ export default function CreatePOModal({ open, onClose, onSuccess }: Props) {
   const [bahanId, setBahanId] = useState('')
   const [qtyOrder, setQtyOrder] = useState('')
   const [satuan, setSatuan] = useState('')
-  const [hargaEstimasi, setHargaEstimasi] = useState('')
+  const [hargaEstimasi, setHargaEstimasi] = useState(0)
   const [tanggalButuh, setTanggalButuh] = useState('')
   const [catatan, setCatatan] = useState('')
   const [loading, setLoading] = useState(false)
@@ -58,7 +59,7 @@ export default function CreatePOModal({ open, onClose, onSuccess }: Props) {
           bahan_id: bahanId,
           qty_order: parseFloat(qtyOrder),
           satuan,
-          harga_estimasi: hargaEstimasi ? parseInt(hargaEstimasi) : null,
+          harga_estimasi: hargaEstimasi > 0 ? hargaEstimasi : null,
           tanggal_butuh: tanggalButuh,
           tanggal_po: getTodayDate(),
           catatan,
@@ -69,7 +70,7 @@ export default function CreatePOModal({ open, onClose, onSuccess }: Props) {
       toast.success('Purchase Order berhasil dibuat')
       onSuccess()
       onClose()
-      setBahanId(''); setQtyOrder(''); setHargaEstimasi(''); setTanggalButuh(''); setCatatan('')
+      setBahanId(''); setQtyOrder(''); setHargaEstimasi(0); setTanggalButuh(''); setCatatan('')
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Gagal membuat PO')
     } finally {
@@ -117,8 +118,7 @@ export default function CreatePOModal({ open, onClose, onSuccess }: Props) {
           </div>
           <div className="space-y-1">
             <Label className="text-[#A8967E] text-xs">Harga Estimasi / satuan (opsional)</Label>
-            <Input type="number" min="0" value={hargaEstimasi} onChange={e => setHargaEstimasi(e.target.value)}
-              placeholder="0" className="bg-[#2C1810] border-white/10 text-[#EDE5D8] h-11" />
+            <MoneyInput value={hargaEstimasi} onChange={setHargaEstimasi} placeholder="0" className="bg-[#2C1810] border-white/10 h-11" />
           </div>
           <div className="space-y-1">
             <Label className="text-[#A8967E] text-xs">Tanggal Dibutuhkan *</Label>

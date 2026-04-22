@@ -56,3 +56,14 @@ export const getGerobakNumber = (nama: string): number => {
   const match = nama.match(/\d+/)
   return match ? parseInt(match[0]) : 1
 }
+
+// Format number with Indonesian thousand separator for display (1500000 → "1.500.000")
+export const formatThousand = (value: number): string => {
+  if (!value || value === 0) return ''
+  return value.toLocaleString('id-ID')
+}
+
+// Parse Indonesian formatted string back to number ("1.500.000" → 1500000)
+export const parseThousand = (formatted: string): number => {
+  return parseInt(formatted.replace(/\./g, '').replace(/,/g, '')) || 0
+}

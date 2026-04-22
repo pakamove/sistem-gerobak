@@ -9,31 +9,37 @@ interface CartBarProps {
 }
 
 export default function CartBar({ onOpenCart }: CartBarProps) {
-  const cartItems = usePOSStore((s) => s.cartItems)
   const cartTotal = usePOSStore((s) => s.cartTotal)
   const cartCount = usePOSStore((s) => s.cartCount)
 
   const count = cartCount()
   const total = cartTotal()
 
-  if (count === 0) return null
-
   return (
     <div className="mx-4">
       <button
         onClick={onOpenCart}
-        className="w-full bg-[#D4722A] text-white rounded-xl p-4 flex justify-between items-center"
+        disabled={count === 0}
+        className={`w-full rounded-xl p-4 flex justify-between items-center transition-all ${
+          count > 0
+            ? 'bg-[#D4722A] text-white active:scale-95'
+            : 'bg-[#2C1810] text-[#5C5040] cursor-not-allowed'
+        }`}
       >
         <div className="flex items-center gap-2">
           <div className="relative">
             <ShoppingCart className="w-5 h-5" />
-            <span className="absolute -top-2 -right-2 bg-white text-[#D4722A] text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
-              {count}
-            </span>
+            {count > 0 && (
+              <span className="absolute -top-2 -right-2 bg-white text-[#D4722A] text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
+                {count}
+              </span>
+            )}
           </div>
-          <span className="text-sm font-medium">{count} item</span>
+          <span className="text-sm font-medium">
+            {count > 0 ? `${count} item` : 'Keranjang kosong'}
+          </span>
         </div>
-        <span className="font-bold text-base">{formatRupiah(total)}</span>
+        <span className="font-bold text-base">{count > 0 ? formatRupiah(total) : 'Rp 0'}</span>
       </button>
     </div>
   )

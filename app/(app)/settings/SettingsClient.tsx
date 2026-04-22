@@ -1,12 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import TopHeader from '@/components/layout/TopHeader'
 import { Button } from '@/components/ui/button'
+import CloseShiftModal from '@/components/pos/CloseShiftModal'
+import RecentTransactions from '@/components/pos/RecentTransactions'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { LogOut, User, MapPin, Phone, Shield, Loader2 } from 'lucide-react'
+import { formatRupiah } from '@/lib/utils/format'
+import {
+  LogOut, User, MapPin, Phone, Shield, Loader2,
+  Users, Package, ShoppingBag, Truck, ChefHat, Wrench,
+  BarChart2, Clock, Store, AlertCircle,
+} from 'lucide-react'
+import type { Shift } from '@/lib/types'
 
 const roleLabel: Record<string, string> = {
   owner: 'Owner',
@@ -36,9 +46,74 @@ interface Props {
   }
 }
 
+async function fetchActiveShift(): Promise<Shift | null> {
+  const res = await fetch('/api/pos/shift')
+  if (res.status === 404) return null
+  if (!res.ok) return null
+  const json = await res.json()
+  return json.data?.shift ?? null
+}
+
+const OWNER_MANAGER_ROLES = ['owner', 'manager']
+const POS_ROLES = ['owner', 'crew_gerobak', 'delivery']
+
+const settingsMenus = [
+  {
+    label: 'Kelola Pengguna',
+    desc: 'Tambah & atur user, role, dan akses',
+    href: '/settings/users',
+    icon: Users,
+    roles: ['owner', 'manager'],
+  },
+  {
+    label: 'Kelola Menu & Resep',
+    desc: 'Tambah menu, resep, dan HPP',
+    href: '/settings/menus',
+    icon: ChefHat,
+    roles: ['owner', 'manager'],
+  },
+  {
+    label: 'Kelola Bahan Baku',
+    desc: 'Tambah & atur bahan baku inventaris',
+    href: '/settings/inventory',
+    icon: Package,
+    roles: ['owner', 'manager', 'purchaser'],
+  },
+  {
+    label: 'Kelola Supplier',
+    desc: 'Data supplier dan kontak',
+    href: '/settings/suppliers',
+    icon: Truck,
+    roles: ['owner', 'manager', 'purchaser'],
+  },
+  {
+    label: 'Kelola Aset',
+    desc: 'Aset & penyusutan',
+    href: '/settings/assets',
+    icon: Wrench,
+    roles: ['owner', 'manager'],
+  },
+  {
+    label: 'Laporan',
+    desc: 'Penjualan, pengeluaran, dan labor cost',
+    href: '/reports',
+    icon: BarChart2,
+    roles: ['owner', 'manager'],
+  },
+]
+
 export default function SettingsClient({ profile }: Props) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [loggingOut, setLoggingOut] = useState(false)
+  const [showCloseShift, setShowCloseShift] = useState(false)
+
+  const { data: activeShift } = useQuery<Shift | null>({
+    queryKey: ['shift'],
+    queryFn: fetchActiveShift,
+    staleTime: 0,
+    enabled: POS_ROLES.includes(profile.role),
+  })
 
   const handleLogout = async () => {
     setLoggingOut(true)
@@ -49,11 +124,18 @@ export default function SettingsClient({ profile }: Props) {
     router.refresh()
   }
 
-  return (
-    <div className="min-h-full">
-      <TopHeader title="Profil" subtitle="Informasi Akun" />
+  const handleCloseShiftSuccess = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['shift'] })
+    queryClient.invalidateQueries({ queryKey: ['pos-transactions'] })
+  }, [queryClient])
 
-      <div className="px-4 pt-6 space-y-4">
+  const visibleSettings = settingsMenus.filter((m) => m.roles.includes(profile.role))
+
+  return (
+    <div className="min-h-full pb-8">
+      <TopHeader title="Profil" subtitle="Pengaturan Akun" />
+
+      <div className="px-4 pt-5 space-y-4">
         {/* Profile Card */}
         <div className="bg-[#231e18] rounded-2xl p-5 border border-white/8 space-y-4">
           <div className="flex items-center gap-4">
@@ -67,7 +149,6 @@ export default function SettingsClient({ profile }: Props) {
               <p className="text-sm text-[#A8967E]">{profile.email}</p>
             </div>
           </div>
-
           <div className="space-y-3 pt-2 border-t border-white/8">
             <div className="flex items-center gap-3">
               <Shield className="w-4 h-4 text-[#A8967E] flex-shrink-0" />
@@ -97,10 +178,116 @@ export default function SettingsClient({ profile }: Props) {
           </div>
         </div>
 
+        {/* Shift Summary — untuk POS roles */}
+        {POS_ROLES.includes(profile.role) && (
+          <div className="bg-[#231e18] rounded-2xl border border-white/8 overflow-hidden">
+            <div className="px-4 py-3 border-b border-white/8 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Store className="w-4 h-4 text-[#D4722A]" />
+                <p className="text-sm font-semibold text-[#EDE5D8]">Status Shift</p>
+              </div>
+              {activeShift ? (
+                <div className="flex items-center gap-1.5 bg-green-900/30 border border-green-500/30 rounded-full px-2.5 py-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  <span className="text-[10px] font-semibold text-green-400">Aktif</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 bg-red-900/20 border border-red-500/20 rounded-full px-2.5 py-1">
+                  <AlertCircle className="w-3 h-3 text-red-400" />
+                  <span className="text-[10px] font-semibold text-red-400">Tidak Ada Shift</span>
+                </div>
+              )}
+            </div>
+
+            {activeShift ? (
+              <div className="p-4 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[#1C1712] rounded-xl p-3">
+                    <p className="text-xs text-[#A8967E]">Dibuka</p>
+                    <p className="text-sm font-semibold text-[#EDE5D8]">
+                      {activeShift.waktu_buka
+                        ? new Date(activeShift.waktu_buka).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                        : '—'}
+                    </p>
+                  </div>
+                  <div className="bg-[#1C1712] rounded-xl p-3">
+                    <p className="text-xs text-[#A8967E]">Cash Awal</p>
+                    <p className="text-sm font-semibold text-[#EDE5D8]">{formatRupiah(activeShift.cash_awal)}</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setShowCloseShift(true)}
+                  variant="destructive"
+                  className="w-full bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-500/30"
+                >
+                  Tutup Shift
+                </Button>
+              </div>
+            ) : (
+              <div className="p-4">
+                <p className="text-xs text-[#5C5040] text-center">Buka shift dari halaman POS</p>
+              </div>
+            )}
+
+            {/* Recent Transactions */}
+            {activeShift && (
+              <div className="border-t border-white/8">
+                <div className="px-4 pt-3 pb-1 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-[#A8967E]" />
+                  <p className="text-sm font-semibold text-[#EDE5D8]">Transaksi Terbaru</p>
+                </div>
+                <RecentTransactions shiftId={activeShift.id} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Settings Menu — untuk owner/manager/purchaser */}
+        {visibleSettings.length > 0 && (
+          <div className="bg-[#231e18] rounded-2xl border border-white/8 overflow-hidden">
+            <div className="px-4 py-3 border-b border-white/8">
+              <p className="text-sm font-semibold text-[#EDE5D8]">Pengaturan</p>
+            </div>
+            <div className="divide-y divide-white/8">
+              {visibleSettings.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-3 px-4 py-3.5 active:bg-white/5 transition-colors"
+                >
+                  <div className="w-9 h-9 bg-[#2C1810] rounded-xl flex items-center justify-center flex-shrink-0">
+                    <item.icon className="w-4 h-4 text-[#D4722A]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[#EDE5D8]">{item.label}</p>
+                    <p className="text-xs text-[#5C5040] truncate">{item.desc}</p>
+                  </div>
+                  <span className="text-[#5C5040] text-lg">›</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Attendance link */}
+        <Link
+          href="/attendance"
+          className="flex items-center gap-3 bg-[#231e18] rounded-2xl border border-white/8 px-4 py-3.5 active:bg-white/5 transition-colors"
+        >
+          <div className="w-9 h-9 bg-[#2C1810] rounded-xl flex items-center justify-center flex-shrink-0">
+            <User className="w-4 h-4 text-[#D4722A]" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-[#EDE5D8]">Absensi</p>
+            <p className="text-xs text-[#5C5040]">Clock in & clock out harian</p>
+          </div>
+          <span className="text-[#5C5040] text-lg">›</span>
+        </Link>
+
         {/* App Info */}
         <div className="bg-[#231e18] rounded-xl p-4 border border-white/8">
           <p className="text-xs text-[#5C5040] text-center">
-            {process.env.NEXT_PUBLIC_APP_NAME} v{process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'}
+            Sistem Gerobak · v2.0.0
           </p>
         </div>
 
@@ -118,6 +305,16 @@ export default function SettingsClient({ profile }: Props) {
           )}
         </Button>
       </div>
+
+      {/* Close Shift Modal */}
+      {activeShift && showCloseShift && (
+        <CloseShiftModal
+          open={showCloseShift}
+          shift={activeShift}
+          onClose={() => setShowCloseShift(false)}
+          onSuccess={handleCloseShiftSuccess}
+        />
+      )}
     </div>
   )
 }

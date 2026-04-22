@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { formatRupiah } from '@/lib/utils/format'
+import MoneyInput from '@/components/shared/MoneyInput'
 
 interface TunaiPaymentModalProps {
   open: boolean
@@ -60,12 +61,11 @@ export default function TunaiPaymentModal({
 
           <div>
             <label className="text-xs text-[#A8967E] mb-1 block">Uang Diterima</label>
-            <input
-              type="number"
-              value={uangDiterima === 0 ? '' : uangDiterima}
-              onChange={(e) => setUangDiterima(Number(e.target.value) || 0)}
+            <MoneyInput
+              value={uangDiterima}
+              onChange={setUangDiterima}
               placeholder="0"
-              className="w-full bg-[#1C1712] border border-white/8 rounded-xl px-4 py-3 text-xl font-bold text-[#EDE5D8] text-right focus:outline-none focus:border-[#D4722A]"
+              className="text-xl font-bold text-right h-12"
             />
           </div>
 

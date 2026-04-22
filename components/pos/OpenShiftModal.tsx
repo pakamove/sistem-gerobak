@@ -12,10 +12,10 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { formatRupiah, getTodayDate, formatDate } from '@/lib/utils/format'
+import MoneyInput from '@/components/shared/MoneyInput'
 import type { Menu, Shift } from '@/lib/types'
 
 interface StokAwalItem {
@@ -129,19 +129,7 @@ export default function OpenShiftModal({ open, onClose, onSuccess }: OpenShiftMo
           {/* Cash Awal */}
           <div className="space-y-2">
             <Label className="text-xs text-[#A8967E] font-medium">Cash Awal (Modal Tunai)</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A8967E] text-sm">
-                Rp
-              </span>
-              <Input
-                type="number"
-                min={0}
-                value={cashAwal === 0 ? '' : cashAwal}
-                onChange={(e) => setCashAwal(Number(e.target.value) || 0)}
-                placeholder="0"
-                className="pl-9 bg-[#1C1712] border-white/8 text-[#EDE5D8] placeholder:text-[#5C5040] focus-visible:border-[#D4722A] h-11 text-base"
-              />
-            </div>
+            <MoneyInput value={cashAwal} onChange={setCashAwal} placeholder="0" />
             {cashAwal > 0 && (
               <p className="text-xs text-[#A8967E]">{formatRupiah(cashAwal)}</p>
             )}
