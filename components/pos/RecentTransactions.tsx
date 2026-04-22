@@ -20,7 +20,8 @@ interface RecentTransactionsProps {
 async function fetchTransactions(shiftId: string): Promise<Transaction[]> {
   const res = await fetch(`/api/pos/transactions?shift_id=${shiftId}`)
   if (!res.ok) throw new Error('Failed to fetch transactions')
-  return res.json()
+  const json = await res.json()
+  return json.data?.transactions ?? []
 }
 
 function TransactionSkeleton() {

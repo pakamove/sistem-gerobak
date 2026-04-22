@@ -160,11 +160,13 @@ export default function CreateProductionModal({
               <div className="h-11 rounded-xl bg-white/5 animate-pulse" />
             ) : (
               <Select
-                value={form.menu_id || undefined}
-                onValueChange={(val) => { if (val != null) setField('menu_id', val) }}
+                value={form.menu_id}
+                onValueChange={(val) => setField('menu_id', val)}
               >
                 <SelectTrigger className="w-full bg-[#1C1712] border-white/8 text-[#EDE5D8] h-11 data-placeholder:text-[#5C5040] focus-visible:border-[#D4722A]">
-                  <SelectValue placeholder="Pilih menu..." />
+                  <SelectValue placeholder="Pilih menu...">
+                    {form.menu_id ? (activeMenus.find(m => m.id === form.menu_id)?.nama_menu ?? null) : null}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-[#231e18] border-white/8 text-[#EDE5D8]">
                   {activeMenus.length === 0 ? (
@@ -237,11 +239,13 @@ export default function CreateProductionModal({
               <div className="h-11 rounded-xl bg-white/5 animate-pulse" />
             ) : (
               <Select
-                value={form.koki_id || undefined}
-                onValueChange={(val) => { if (val != null) setField('koki_id', val) }}
+                value={form.koki_id}
+                onValueChange={(val) => setField('koki_id', val)}
               >
                 <SelectTrigger className="w-full bg-[#1C1712] border-white/8 text-[#EDE5D8] h-11 data-placeholder:text-[#5C5040] focus-visible:border-[#D4722A]">
-                  <SelectValue placeholder="Pilih koki (opsional)..." />
+                  <SelectValue placeholder="Pilih koki (opsional)...">
+                    {form.koki_id ? ((kokiList ?? []).find(k => k.id === form.koki_id)?.nama_lengkap ?? null) : null}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-[#231e18] border-white/8 text-[#EDE5D8]">
                   {(kokiList ?? []).length === 0 ? (

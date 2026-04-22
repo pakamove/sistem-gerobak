@@ -88,7 +88,11 @@ export default function CreatePOModal({ open, onClose, onSuccess }: Props) {
             <Label className="text-[#A8967E] text-xs">Bahan Baku *</Label>
             <Select value={bahanId} onValueChange={handleBahanChange}>
               <SelectTrigger className="bg-[#2C1810] border-white/10 text-[#EDE5D8] h-11">
-                <SelectValue placeholder="Pilih bahan..." />
+                <SelectValue placeholder="Pilih bahan...">
+                  {bahanId
+                    ? (() => { const b = (bahanList || []).find((x: { id: string; nama_bahan: string; satuan: string }) => x.id === bahanId); return b ? `${b.nama_bahan} (${b.satuan})` : bahanId })()
+                    : null}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-[#231e18] border-white/10">
                 {(bahanList || []).map((b: { id: string; nama_bahan: string; satuan: string }) => (

@@ -37,14 +37,16 @@ async function fetchMenus(kategori: string): Promise<Menu[]> {
       : '/api/pos/menu'
   const res = await fetch(url)
   if (!res.ok) throw new Error('Gagal memuat menu')
-  return res.json()
+  const json = await res.json()
+  return json.data?.menus ?? []
 }
 
 async function fetchActiveShift(): Promise<Shift | null> {
   const res = await fetch('/api/pos/shift')
   if (res.status === 404) return null
   if (!res.ok) throw new Error('Gagal mengambil shift')
-  return res.json()
+  const json = await res.json()
+  return json.data?.shift ?? null
 }
 
 interface CreateTransactionPayload {
@@ -88,10 +90,10 @@ export default function POSClient({ profile }: POSClientProps) {
   const clearCart = usePOSStore((s) => s.clearCart)
 
   // Fetch shift dari server dan sync ke store
-  const { data: shiftData } = useQuery<Shift | null>({
+  const { data: shiftData, isLoading: shiftLoading } = useQuery<Shift | null>({
     queryKey: ['shift'],
     queryFn: fetchActiveShift,
-    staleTime: 30_000,
+    staleTime: 0,
   })
 
   useEffect(() => {
@@ -99,6 +101,9 @@ export default function POSClient({ profile }: POSClientProps) {
       setActiveShift(shiftData)
     }
   }, [shiftData, setActiveShift])
+
+  // Gunakan data server sebagai sumber kebenaran, bukan store (hindari stale persist)
+  const resolvedShift = shiftData !== undefined ? shiftData : activeShift
 
   // Fetch menus
   const {
@@ -109,7 +114,7 @@ export default function POSClient({ profile }: POSClientProps) {
     queryKey: ['pos-menus', selectedCategory],
     queryFn: () => fetchMenus(selectedCategory),
     staleTime: 60_000,
-    enabled: !!activeShift,
+    enabled: !!resolvedShift,
   })
 
   // Create transaction mutation
@@ -143,28 +148,30 @@ export default function POSClient({ profile }: POSClientProps) {
 
   const handleTunaiConfirm = useCallback(
     (uangDiterima: number) => {
-      if (!activeShift) return
+      const shift = shiftData ?? activeShift
+      if (!shift) return
       setPaymentLoading(true)
       transactionMutation.mutate({
-        shift_id: activeShift.id,
+        shift_id: shift.id,
         metode_bayar: 'tunai',
         cart_items: cartItems.map((i) => ({ menu_id: i.menu_id, qty: i.qty })),
         payment: { uang_diterima: uangDiterima },
       })
     },
-    [activeShift, cartItems, transactionMutation]
+    [shiftData, activeShift, cartItems, transactionMutation]
   )
 
   const handleQrisConfirm = useCallback(() => {
-    if (!activeShift) return
+    const shift = shiftData ?? activeShift
+    if (!shift) return
     setPaymentLoading(true)
     transactionMutation.mutate({
-      shift_id: activeShift.id,
+      shift_id: shift.id,
       metode_bayar: 'qris',
       cart_items: cartItems.map((i) => ({ menu_id: i.menu_id, qty: i.qty })),
       payment: { confirmed: true },
     })
-  }, [activeShift, cartItems, transactionMutation])
+  }, [shiftData, activeShift, cartItems, transactionMutation])
 
   const handleOpenShiftSuccess = useCallback(
     (shift: Shift) => {
@@ -187,7 +194,7 @@ export default function POSClient({ profile }: POSClientProps) {
   // Header right action
   const headerRightAction = (
     <div className="flex items-center gap-2">
-      {activeShift ? (
+      {resolvedShift ? (
         <>
           <div className="flex items-center gap-1.5 bg-green-900/30 border border-green-500/30 rounded-full px-2.5 py-1">
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
@@ -209,7 +216,15 @@ export default function POSClient({ profile }: POSClientProps) {
     </div>
   )
 
-  const gerobakSubtitle = activeShift?.gerobak?.nama ?? profile.lokasi_tugas ?? 'Gerobak'
+  const gerobakSubtitle = resolvedShift?.gerobak?.nama ?? profile.lokasi_tugas ?? 'Gerobak'
+
+  if (shiftLoading) {
+    return (
+      <div className="min-h-screen bg-[#1C1712] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#D4722A] animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#1C1712] flex flex-col">
@@ -220,7 +235,7 @@ export default function POSClient({ profile }: POSClientProps) {
       />
 
       {/* No active shift — prompt to open */}
-      {!activeShift ? (
+      {!resolvedShift ? (
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="w-full max-w-sm">
             <div className="bg-[#231e18] border border-white/8 rounded-2xl p-8 flex flex-col items-center gap-5 text-center">
@@ -290,7 +305,7 @@ export default function POSClient({ profile }: POSClientProps) {
             <div className="px-4 pt-4 pb-2 flex items-center justify-between">
               <p className="text-sm font-semibold text-[#EDE5D8]">Transaksi Terbaru</p>
             </div>
-            <RecentTransactions shiftId={activeShift.id} />
+            <RecentTransactions shiftId={resolvedShift?.id ?? null} />
           </div>
 
           {/* Cart Bar — sticky bottom, above bottom nav */}
@@ -339,10 +354,10 @@ export default function POSClient({ profile }: POSClientProps) {
       />
 
       {/* Close Shift Modal */}
-      {activeShift && showCloseShift && (
+      {resolvedShift && showCloseShift && (
         <CloseShiftModal
           open={showCloseShift}
-          shift={activeShift}
+          shift={resolvedShift}
           onClose={() => setShowCloseShift(false)}
           onSuccess={handleCloseShiftSuccess}
         />

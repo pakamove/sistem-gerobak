@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import {
   getAuthProfile,
   unauthorized,
@@ -19,9 +19,9 @@ export async function GET(request: Request) {
   const gerobakId = searchParams.get('gerobak_id')
 
   try {
-    const supabase = await createClient()
+    const adminSupabase = createAdminClient()
 
-    let query = supabase
+    let query = adminSupabase
       .from('t_shift')
       .select(`
         *,
@@ -29,12 +29,13 @@ export async function GET(request: Request) {
         crew:m_users(id, nama_lengkap)
       `)
       .eq('tanggal', date)
+      .is('waktu_tutup', null)
 
     if (gerobakId) {
       query = query.eq('gerobak_id', gerobakId)
     } else if (profile.role === 'crew_gerobak') {
       // Auto-find gerobak from user profile
-      const { data: gerobakData } = await supabase
+      const { data: gerobakData } = await adminSupabase
         .from('m_gerobak')
         .select('id')
         .ilike('nama', `%${profile.lokasi_tugas?.replace('gerobak_', 'Gerobak ') || ''}%`)

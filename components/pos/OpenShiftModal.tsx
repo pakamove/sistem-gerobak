@@ -33,7 +33,8 @@ interface OpenShiftModalProps {
 async function fetchMenus(): Promise<Menu[]> {
   const res = await fetch('/api/pos/menu')
   if (!res.ok) throw new Error('Gagal memuat menu')
-  return res.json()
+  const json = await res.json()
+  return json.data?.menus ?? []
 }
 
 export default function OpenShiftModal({ open, onClose, onSuccess }: OpenShiftModalProps) {

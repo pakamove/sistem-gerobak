@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import {
   getAuthProfile,
   unauthorized,
@@ -62,9 +62,10 @@ export async function POST(request: Request) {
     if (!cart_items || cart_items.length === 0) return badRequest('Cart tidak boleh kosong')
 
     const supabase = await createClient()
+    const adminSupabase = createAdminClient()
 
-    // Validate shift
-    const { data: shift, error: shiftErr } = await supabase
+    // Validate shift — pakai admin client agar tidak terblokir RLS
+    const { data: shift, error: shiftErr } = await adminSupabase
       .from('t_shift')
       .select('*, gerobak:m_gerobak(id, nama)')
       .eq('id', shift_id)

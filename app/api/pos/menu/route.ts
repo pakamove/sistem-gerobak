@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     let query = supabase
       .from('m_menu')
-      .select('id, nama_menu, kategori, harga_jual, hpp_current, image_url, urutan')
+      .select('id, nama_menu, kategori, harga_jual, hpp_current, image_url, urutan, is_active')
       .eq('is_active', true)
       .order('urutan', { ascending: true })
       .order('nama_menu', { ascending: true })
@@ -22,9 +22,12 @@ export async function GET(request: Request) {
     }
 
     const { data, error } = await query
-    if (error) throw error
+    if (error) {
+      console.error('GET /api/pos/menu supabase error:', JSON.stringify(error))
+      throw error
+    }
 
-    return ok({ menus: data })
+    return ok({ menus: data ?? [] })
   } catch (err) {
     console.error('GET /api/pos/menu error:', err)
     return serverError()

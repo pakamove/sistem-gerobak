@@ -174,11 +174,13 @@ export default function UpdateProductionModal({
                   Status Baru <span className="text-red-400">*</span>
                 </Label>
                 <Select
-                  value={newStatus || undefined}
+                  value={newStatus}
                   onValueChange={(val) => setNewStatus(val as StatusProduksi)}
                 >
                   <SelectTrigger className="w-full bg-[#1C1712] border-white/8 text-[#EDE5D8] h-11 data-placeholder:text-[#5C5040] focus-visible:border-[#D4722A]">
-                    <SelectValue placeholder="Pilih status baru..." />
+                    <SelectValue placeholder="Pilih status baru...">
+                      {newStatus ? (nextOptions.find(o => o.value === newStatus)?.label ?? null) : null}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="bg-[#231e18] border-white/8 text-[#EDE5D8]">
                     {nextOptions.map((opt) => (

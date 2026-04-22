@@ -99,7 +99,9 @@ export default function UpdatePOModal({ open, po, role, onClose, onSuccess }: Pr
               <Label className="text-[#A8967E] text-xs">Status Baru</Label>
               <Select value={status} onValueChange={v => setStatus(v as StatusPO)}>
                 <SelectTrigger className="bg-[#2C1810] border-white/10 text-[#EDE5D8] h-11">
-                  <SelectValue placeholder="Pilih status..." />
+                  <SelectValue placeholder="Pilih status...">
+                    {status ? statusLabel[status] : null}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-[#231e18] border-white/10">
                   {filteredStatuses.map(s => (
