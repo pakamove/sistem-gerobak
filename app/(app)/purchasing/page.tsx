@@ -1,28 +1,19 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import PurchasingClient from './PurchasingClient'
 
-const roleRedirects: Record<string, string> = {
-  owner: '/dashboard',
-  manager: '/dashboard',
-  purchaser: '/purchasing',
-  koki: '/kitchen',
-  crew_gerobak: '/pos',
-  delivery: '/pos',
-}
-
-export default async function RootPage() {
+export default async function PurchasingPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase
     .from('m_users')
-    .select('role')
+    .select('id, role')
     .eq('id', user.id)
     .single()
 
   if (!profile) redirect('/login')
 
-  redirect(roleRedirects[profile.role] || '/pos')
+  return <PurchasingClient role={profile.role} />
 }

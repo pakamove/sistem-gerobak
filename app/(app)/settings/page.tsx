@@ -1,28 +1,19 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import SettingsClient from './SettingsClient'
 
-const roleRedirects: Record<string, string> = {
-  owner: '/dashboard',
-  manager: '/dashboard',
-  purchaser: '/purchasing',
-  koki: '/kitchen',
-  crew_gerobak: '/pos',
-  delivery: '/pos',
-}
-
-export default async function RootPage() {
+export default async function SettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase
     .from('m_users')
-    .select('role')
+    .select('id, nama_lengkap, role, lokasi_tugas, no_hp')
     .eq('id', user.id)
     .single()
 
   if (!profile) redirect('/login')
 
-  redirect(roleRedirects[profile.role] || '/pos')
+  return <SettingsClient profile={{ ...profile, email: user.email || '' }} />
 }
