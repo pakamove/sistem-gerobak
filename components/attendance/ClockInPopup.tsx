@@ -27,6 +27,10 @@ export default function ClockInPopup({ userName }: Props) {
   const [open, setOpen] = useState(true)
   const [loading, setLoading] = useState(false)
 
+  // Unmount seluruh Dialog saat closed — mencegah backdrop base-ui
+  // tetap ada di DOM dan block klik elemen di bawahnya
+  if (!open) return null
+
   const handleClockIn = useCallback(async () => {
     setLoading(true)
     try {

@@ -4,14 +4,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   ShoppingCart, ChefHat, Package, ShoppingBag,
-  LayoutDashboard, Settings, ClipboardCheck, BarChart3,
+  LayoutDashboard, Settings, ClipboardCheck, BarChart3, Clock,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AppModule } from '@/lib/types'
 
 const ICON_MAP: Record<string, React.ElementType> = {
   ShoppingCart, ChefHat, Package, ShoppingBag,
-  LayoutDashboard, Settings, ClipboardCheck, BarChart3,
+  LayoutDashboard, Settings, ClipboardCheck, BarChart3, Clock,
 }
 
 interface BottomNavProps {
