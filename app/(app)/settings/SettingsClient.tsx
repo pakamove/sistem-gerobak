@@ -13,26 +13,18 @@ import { toast } from 'sonner'
 import { formatRupiah } from '@/lib/utils/format'
 import {
   LogOut, User, MapPin, Phone, Shield, Loader2,
-  Users, Package, ShoppingBag, Truck, ChefHat, Wrench,
-  BarChart2, Clock, Store, AlertCircle,
+  Users, Package, Truck, ChefHat, Wrench,
+  BarChart2, Clock, Store, AlertCircle, KeyRound,
 } from 'lucide-react'
-import type { Shift } from '@/lib/types'
+import type { Shift, AppRole, AppLocation } from '@/lib/types'
 
-const roleLabel: Record<string, string> = {
+const FALLBACK_ROLE_LABEL: Record<string, string> = {
   owner: 'Owner',
   manager: 'Manager Ops',
   purchaser: 'Purchaser',
   koki: 'Koki',
   crew_gerobak: 'Crew Gerobak',
   delivery: 'Delivery',
-}
-
-const lokasiLabel: Record<string, string> = {
-  central_kitchen: 'Central Kitchen',
-  gerobak_1: 'Gerobak 1',
-  gerobak_2: 'Gerobak 2',
-  gerobak_3: 'Gerobak 3',
-  mobile: 'Mobile',
 }
 
 interface Props {
@@ -63,6 +55,20 @@ const settingsMenus = [
     desc: 'Tambah & atur user, role, dan akses',
     href: '/settings/users',
     icon: Users,
+    roles: ['owner', 'manager'],
+  },
+  {
+    label: 'Kelola Role & Akses',
+    desc: 'Atur role, modul, dan tipe tampilan',
+    href: '/settings/roles',
+    icon: KeyRound,
+    roles: ['owner'],
+  },
+  {
+    label: 'Kelola Lokasi',
+    desc: 'Tambah & atur lokasi operasional',
+    href: '/settings/locations',
+    icon: MapPin,
     roles: ['owner', 'manager'],
   },
   {
@@ -115,6 +121,29 @@ export default function SettingsClient({ profile }: Props) {
     enabled: POS_ROLES.includes(profile.role),
   })
 
+  const { data: roles } = useQuery<AppRole[]>({
+    queryKey: ['roles'],
+    queryFn: async () => {
+      const res = await fetch('/api/roles')
+      const json = await res.json()
+      return json.data?.roles ?? []
+    },
+    staleTime: 60_000,
+  })
+
+  const { data: locations } = useQuery<AppLocation[]>({
+    queryKey: ['locations'],
+    queryFn: async () => {
+      const res = await fetch('/api/locations')
+      const json = await res.json()
+      return json.data?.locations ?? []
+    },
+    staleTime: 60_000,
+  })
+
+  const roleLabel = (id: string) => roles?.find(r => r.id === id)?.display_name ?? FALLBACK_ROLE_LABEL[id] ?? id
+  const lokasiLabel = (id: string) => locations?.find(l => l.id === id)?.nama ?? id
+
   const handleLogout = async () => {
     setLoggingOut(true)
     const supabase = createClient()
@@ -154,7 +183,7 @@ export default function SettingsClient({ profile }: Props) {
               <Shield className="w-4 h-4 text-[#A8967E] flex-shrink-0" />
               <div>
                 <p className="text-xs text-[#5C5040]">Role</p>
-                <p className="text-sm font-medium text-[#EDE5D8]">{roleLabel[profile.role] || profile.role}</p>
+                <p className="text-sm font-medium text-[#EDE5D8]">{roleLabel(profile.role)}</p>
               </div>
             </div>
             {profile.lokasi_tugas && (
@@ -162,7 +191,7 @@ export default function SettingsClient({ profile }: Props) {
                 <MapPin className="w-4 h-4 text-[#A8967E] flex-shrink-0" />
                 <div>
                   <p className="text-xs text-[#5C5040]">Lokasi Tugas</p>
-                  <p className="text-sm font-medium text-[#EDE5D8]">{lokasiLabel[profile.lokasi_tugas] || profile.lokasi_tugas}</p>
+                  <p className="text-sm font-medium text-[#EDE5D8]">{lokasiLabel(profile.lokasi_tugas)}</p>
                 </div>
               </div>
             )}

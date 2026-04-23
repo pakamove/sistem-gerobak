@@ -11,24 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { Loader2, Plus, UserCheck, UserX, ChevronLeft, Pencil } from 'lucide-react'
-import type { User } from '@/lib/types'
-
-const roleLabel: Record<string, string> = {
-  owner: 'Owner',
-  manager: 'Manager Ops',
-  purchaser: 'Purchaser',
-  koki: 'Koki',
-  crew_gerobak: 'Crew Gerobak',
-  delivery: 'Delivery',
-}
-
-const lokasiOptions = [
-  { value: 'central_kitchen', label: 'Central Kitchen' },
-  { value: 'gerobak_1', label: 'Gerobak 1' },
-  { value: 'gerobak_2', label: 'Gerobak 2' },
-  { value: 'gerobak_3', label: 'Gerobak 3' },
-  { value: 'mobile', label: 'Mobile' },
-]
+import type { User, AppRole, AppLocation } from '@/lib/types'
 
 const emptyForm = {
   nama_lengkap: '',
@@ -58,6 +41,29 @@ export default function UsersClient({ role }: Props) {
       return json.data?.users ?? []
     },
   })
+
+  const { data: roles } = useQuery<AppRole[]>({
+    queryKey: ['roles'],
+    queryFn: async () => {
+      const res = await fetch('/api/roles')
+      const json = await res.json()
+      return json.data?.roles ?? []
+    },
+    staleTime: 60_000,
+  })
+
+  const { data: locations } = useQuery<AppLocation[]>({
+    queryKey: ['locations'],
+    queryFn: async () => {
+      const res = await fetch('/api/locations')
+      const json = await res.json()
+      return (json.data?.locations ?? []).filter((l: AppLocation) => l.is_active)
+    },
+    staleTime: 60_000,
+  })
+
+  const getRoleLabel = (id: string) => roles?.find(r => r.id === id)?.display_name ?? id
+  const getLokasiLabel = (id: string) => locations?.find(l => l.id === id)?.nama ?? id
 
   function setField(key: keyof typeof emptyForm, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -171,7 +177,7 @@ export default function UsersClient({ role }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-[#EDE5D8] truncate">{u.nama_lengkap}</p>
-                <p className="text-xs text-[#A8967E]">{roleLabel[u.role] || u.role}</p>
+                <p className="text-xs text-[#A8967E]">{getRoleLabel(u.role)}</p>
                 {!u.is_active && <span className="text-[10px] text-red-400">Nonaktif</span>}
               </div>
               <div className="flex items-center gap-2">
@@ -227,12 +233,12 @@ export default function UsersClient({ role }: Props) {
               <Select value={form.role} onValueChange={(v) => setField('role', v ?? '')}>
                 <SelectTrigger className="bg-[#1C1712] border-white/8 text-[#EDE5D8] h-11">
                   <SelectValue placeholder="Pilih role...">
-                    {form.role ? (roleLabel[form.role] ?? form.role) : null}
+                    {form.role ? getRoleLabel(form.role) : undefined}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-[#231e18] border-white/8">
-                  {Object.entries(roleLabel).map(([val, lbl]) => (
-                    <SelectItem key={val} value={val} className="text-[#EDE5D8] focus:bg-[#2C1810]">{lbl}</SelectItem>
+                  {(roles ?? []).map((r) => (
+                    <SelectItem key={r.id} value={r.id} className="text-[#EDE5D8] focus:bg-[#2C1810]">{r.display_name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -242,12 +248,12 @@ export default function UsersClient({ role }: Props) {
               <Select value={form.lokasi_tugas} onValueChange={(v) => setField('lokasi_tugas', v ?? '')}>
                 <SelectTrigger className="bg-[#1C1712] border-white/8 text-[#EDE5D8] h-11">
                   <SelectValue placeholder="Pilih lokasi...">
-                    {form.lokasi_tugas ? (lokasiOptions.find(o => o.value === form.lokasi_tugas)?.label ?? form.lokasi_tugas) : null}
+                    {form.lokasi_tugas ? getLokasiLabel(form.lokasi_tugas) : undefined}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-[#231e18] border-white/8">
-                  {lokasiOptions.map((o) => (
-                    <SelectItem key={o.value} value={o.value} className="text-[#EDE5D8] focus:bg-[#2C1810]">{o.label}</SelectItem>
+                  {(locations ?? []).map((l) => (
+                    <SelectItem key={l.id} value={l.id} className="text-[#EDE5D8] focus:bg-[#2C1810]">{l.nama}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -279,11 +285,11 @@ export default function UsersClient({ role }: Props) {
               <Label className="text-xs text-[#A8967E]">Role</Label>
               <Select value={editForm.role} onValueChange={(v) => setEditForm(p => ({ ...p, role: v ?? '' }))}>
                 <SelectTrigger className="bg-[#1C1712] border-white/8 text-[#EDE5D8] h-11">
-                  <SelectValue placeholder="Pilih role...">{editForm.role ? (roleLabel[editForm.role] ?? editForm.role) : null}</SelectValue>
+                  <SelectValue placeholder="Pilih role...">{editForm.role ? getRoleLabel(editForm.role) : undefined}</SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-[#231e18] border-white/8">
-                  {Object.entries(roleLabel).map(([val, lbl]) => (
-                    <SelectItem key={val} value={val} className="text-[#EDE5D8] focus:bg-[#2C1810]">{lbl}</SelectItem>
+                  {(roles ?? []).map((r) => (
+                    <SelectItem key={r.id} value={r.id} className="text-[#EDE5D8] focus:bg-[#2C1810]">{r.display_name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -292,11 +298,11 @@ export default function UsersClient({ role }: Props) {
               <Label className="text-xs text-[#A8967E]">Lokasi Tugas</Label>
               <Select value={editForm.lokasi_tugas} onValueChange={(v) => setEditForm(p => ({ ...p, lokasi_tugas: v ?? '' }))}>
                 <SelectTrigger className="bg-[#1C1712] border-white/8 text-[#EDE5D8] h-11">
-                  <SelectValue placeholder="Pilih lokasi...">{editForm.lokasi_tugas ? (lokasiOptions.find(o => o.value === editForm.lokasi_tugas)?.label ?? editForm.lokasi_tugas) : null}</SelectValue>
+                  <SelectValue placeholder="Pilih lokasi...">{editForm.lokasi_tugas ? getLokasiLabel(editForm.lokasi_tugas) : undefined}</SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-[#231e18] border-white/8">
-                  {lokasiOptions.map((o) => (
-                    <SelectItem key={o.value} value={o.value} className="text-[#EDE5D8] focus:bg-[#2C1810]">{o.label}</SelectItem>
+                  {(locations ?? []).map((l) => (
+                    <SelectItem key={l.id} value={l.id} className="text-[#EDE5D8] focus:bg-[#2C1810]">{l.nama}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

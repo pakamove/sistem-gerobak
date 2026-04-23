@@ -1,4 +1,32 @@
 export type UserRole = 'owner' | 'manager' | 'purchaser' | 'koki' | 'crew_gerobak' | 'delivery'
+export type UiType = 'executor' | 'planner'
+
+export interface AppModule {
+  key: string
+  label: string
+  href: string
+  icon_name: string
+  kategori: string
+  urutan: number
+}
+
+export interface AppRole {
+  id: string
+  display_name: string
+  ui_type: UiType
+  color: string | null
+  deskripsi: string | null
+  is_system: boolean
+  created_at: string
+}
+
+export interface AppLocation {
+  id: string
+  nama: string
+  deskripsi: string | null
+  is_active: boolean
+  created_at: string
+}
 export type GerobakLocation = 'gerobak_1' | 'gerobak_2' | 'gerobak_3' | 'central_kitchen' | 'mobile'
 export type MenuKategori = 'nasi' | 'lauk' | 'sayur' | 'kriuk' | 'minuman' | 'paket' | 'lainnya'
 export type MetodeBayar = 'tunai' | 'qris'
