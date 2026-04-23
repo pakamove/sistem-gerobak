@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import BottomNav from '@/components/layout/BottomNav'
 import SideNav from '@/components/layout/SideNav'
+import ClockInPopup from '@/components/attendance/ClockInPopup'
 import type { AppModule } from '@/lib/types'
 
 // Fallback static modules per role (sebelum DB di-setup)
@@ -45,6 +46,23 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!profile) redirect('/login')
 
+  // Cek absensi hari ini untuk popup clock-in
+  const today = new Date().toISOString().split('T')[0]
+  let needsClockIn = false
+  if (profile.role !== 'owner') {
+    try {
+      const { data: todayAbs } = await admin
+        .from('t_absensi')
+        .select('id, jam_masuk')
+        .eq('karyawan_id', profile.id)
+        .eq('tanggal', today)
+        .single()
+      needsClockIn = !todayAbs?.jam_masuk
+    } catch {
+      needsClockIn = true
+    }
+  }
+
   let uiType: 'executor' | 'planner' = PLANNER_ROLES.includes(profile.role) ? 'planner' : 'executor'
   let modules: AppModule[] = getLegacyModules(profile.role)
   let roleDisplayName: string = profile.role
@@ -85,6 +103,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <main className="flex-1 overflow-y-auto min-w-0">
           {children}
         </main>
+        {needsClockIn && <ClockInPopup userName={profile.nama_lengkap} />}
       </div>
     )
   }
@@ -93,6 +112,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-[#1C1712] flex flex-col">
       <main className="flex-1 pb-20">{children}</main>
       <BottomNav modules={modules} role={profile.role} />
+      {needsClockIn && <ClockInPopup userName={profile.nama_lengkap} />}
     </div>
   )
 }

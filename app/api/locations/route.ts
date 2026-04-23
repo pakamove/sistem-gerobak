@@ -63,7 +63,7 @@ export async function PATCH(request: Request) {
 
   try {
     const body = await request.json()
-    const { id, nama, deskripsi, is_active } = body
+    const { id, nama, deskripsi, is_active, latitude, longitude, radius_meter } = body
 
     if (!id) return badRequest('ID lokasi wajib diisi')
 
@@ -72,6 +72,9 @@ export async function PATCH(request: Request) {
     if (nama !== undefined) updates.nama = nama.trim()
     if (deskripsi !== undefined) updates.deskripsi = deskripsi?.trim() || null
     if (is_active !== undefined) updates.is_active = is_active
+    if (latitude !== undefined) updates.latitude = latitude
+    if (longitude !== undefined) updates.longitude = longitude
+    if (radius_meter !== undefined) updates.radius_meter = radius_meter
 
     const { data, error } = await admin
       .from('m_lokasi')

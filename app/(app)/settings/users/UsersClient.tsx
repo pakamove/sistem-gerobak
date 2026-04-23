@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { Loader2, Plus, UserCheck, UserX, ChevronLeft, Pencil } from 'lucide-react'
+import MoneyInput from '@/components/shared/MoneyInput'
 import type { User, AppRole, AppLocation } from '@/lib/types'
 
 const emptyForm = {
@@ -20,6 +21,7 @@ const emptyForm = {
   role: '',
   lokasi_tugas: '',
   no_hp: '',
+  gaji_pokok: 0,
 }
 
 interface Props { role: string }
@@ -30,7 +32,7 @@ export default function UsersClient({ role }: Props) {
   const [showCreate, setShowCreate] = useState(false)
   const [editUser, setEditUser] = useState<User | null>(null)
   const [form, setForm] = useState(emptyForm)
-  const [editForm, setEditForm] = useState({ nama_lengkap: '', role: '', lokasi_tugas: '', no_hp: '', password: '' })
+  const [editForm, setEditForm] = useState({ nama_lengkap: '', role: '', lokasi_tugas: '', no_hp: '', password: '', gaji_pokok: 0 })
   const [loading, setLoading] = useState(false)
 
   const { data: users, isLoading } = useQuery<User[]>({
@@ -102,6 +104,7 @@ export default function UsersClient({ role }: Props) {
       lokasi_tugas: user.lokasi_tugas ?? '',
       no_hp: user.no_hp ?? '',
       password: '',
+      gaji_pokok: (user as User & { gaji_pokok?: number }).gaji_pokok ?? 0,
     })
   }
 
@@ -258,6 +261,13 @@ export default function UsersClient({ role }: Props) {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-[#A8967E]">Gaji Pokok (Rp)</Label>
+              <MoneyInput
+                value={form.gaji_pokok}
+                onChange={(v) => setForm(p => ({ ...p, gaji_pokok: v }))}
+              />
+            </div>
           </div>
           <DialogFooter className="border-t border-white/8 pt-3">
             <Button variant="ghost" onClick={() => setShowCreate(false)} className="flex-1 text-[#A8967E] border border-white/8">Batal</Button>
@@ -311,6 +321,13 @@ export default function UsersClient({ role }: Props) {
               <Label className="text-xs text-[#A8967E]">No. HP</Label>
               <Input value={editForm.no_hp} onChange={(e) => setEditForm(p => ({ ...p, no_hp: e.target.value }))}
                 className="bg-[#1C1712] border-white/8 text-[#EDE5D8] h-11" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-[#A8967E]">Gaji Pokok (Rp)</Label>
+              <MoneyInput
+                value={editForm.gaji_pokok}
+                onChange={(v) => setEditForm(p => ({ ...p, gaji_pokok: v }))}
+              />
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-[#A8967E]">Password Baru (kosongkan jika tidak diubah)</Label>

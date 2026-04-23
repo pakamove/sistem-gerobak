@@ -25,7 +25,50 @@ export interface AppLocation {
   nama: string
   deskripsi: string | null
   is_active: boolean
+  latitude: number | null
+  longitude: number | null
+  radius_meter: number | null
   created_at: string
+}
+
+export type LeaveType = 'cuti' | 'sakit' | 'izin_lain'
+export type LeaveStatus = 'pending' | 'approved' | 'rejected'
+
+export interface LeaveRequest {
+  id: string
+  user_id: string
+  type: LeaveType
+  tanggal_mulai: string
+  tanggal_selesai: string
+  alasan: string | null
+  document_url: string | null
+  status: LeaveStatus
+  approved_by: string | null
+  approved_at: string | null
+  catatan_approval: string | null
+  created_at: string
+  user?: { id: string; nama_lengkap: string; role: string }
+}
+
+export interface AbsensiRecord {
+  id: string
+  karyawan_id: string
+  tanggal: string
+  lokasi_kerja: string | null
+  jam_masuk: string | null
+  jam_pulang: string | null
+  status: 'hadir' | 'izin' | 'sakit' | 'alfa' | 'libur'
+  lembur_jam: number
+  keterangan: string | null
+  ip_address: string | null
+  is_vpn: boolean
+  latitude_in: number | null
+  longitude_in: number | null
+  latitude_out: number | null
+  longitude_out: number | null
+  catatan_out: string | null
+  created_at: string
+  karyawan?: { id: string; nama_lengkap: string; role: string; lokasi_tugas: string | null }
 }
 export type GerobakLocation = 'gerobak_1' | 'gerobak_2' | 'gerobak_3' | 'central_kitchen' | 'mobile'
 export type MenuKategori = 'nasi' | 'lauk' | 'sayur' | 'kriuk' | 'minuman' | 'paket' | 'lainnya'
@@ -252,23 +295,6 @@ export interface Asset {
   catatan: string | null
   is_active: boolean
   created_at: string
-}
-
-export interface AbsensiRecord {
-  id: string
-  user_id: string
-  tanggal: string
-  clock_in: string
-  clock_out: string | null
-  latitude_in: number | null
-  longitude_in: number | null
-  latitude_out: number | null
-  longitude_out: number | null
-  durasi_menit: number | null
-  status: string
-  catatan: string | null
-  catatan_out: string | null
-  user?: { id: string; nama_lengkap: string; role: string }
 }
 
 export interface DashboardSummary {
