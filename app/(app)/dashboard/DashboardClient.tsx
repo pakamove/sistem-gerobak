@@ -50,6 +50,8 @@ export default function DashboardClient({ namaUser }: Props) {
         {/* Date selector */}
         <div className="flex gap-2 items-center">
           <input
+            id="dashboard-date"
+            name="dashboard-date"
             type="date"
             value={date}
             max={getTodayDate()}

@@ -79,12 +79,12 @@ export default function ReportsClient() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-[10px] text-[#A8967E] block mb-1">Dari</label>
-              <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
+              <input id="report-from" name="report-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)}
                 className="w-full bg-[#1C1712] border border-white/8 rounded-xl px-3 py-2 text-sm text-[#EDE5D8] focus:outline-none focus:border-[#D4722A]" />
             </div>
             <div>
               <label className="text-[10px] text-[#A8967E] block mb-1">Sampai</label>
-              <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
+              <input id="report-to" name="report-to" type="date" value={to} onChange={(e) => setTo(e.target.value)}
                 className="w-full bg-[#1C1712] border border-white/8 rounded-xl px-3 py-2 text-sm text-[#EDE5D8] focus:outline-none focus:border-[#D4722A]" />
             </div>
           </div>
