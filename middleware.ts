@@ -11,12 +11,12 @@ const roleRedirects: Record<string, string> = {
 }
 
 const roleAllowedPaths: Record<string, string[]> = {
-  owner: ['/dashboard', '/pos', '/kitchen', '/inventory', '/purchasing', '/settings'],
-  manager: ['/dashboard', '/pos', '/kitchen', '/inventory', '/purchasing', '/settings'],
-  purchaser: ['/purchasing', '/inventory', '/settings'],
-  koki: ['/kitchen', '/inventory', '/settings'],
-  crew_gerobak: ['/pos', '/settings'],
-  delivery: ['/pos', '/settings'],
+  owner: ['/dashboard', '/pos', '/kitchen', '/inventory', '/purchasing', '/attendance', '/reports', '/settings'],
+  manager: ['/dashboard', '/pos', '/kitchen', '/inventory', '/purchasing', '/attendance', '/reports', '/settings'],
+  purchaser: ['/purchasing', '/inventory', '/attendance', '/settings'],
+  koki: ['/kitchen', '/inventory', '/attendance', '/settings'],
+  crew_gerobak: ['/pos', '/attendance', '/settings'],
+  delivery: ['/pos', '/attendance', '/settings'],
 }
 
 export async function middleware(request: NextRequest) {
